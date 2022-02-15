@@ -2,9 +2,10 @@ require("dotenv").config();
 const axios = require("axios");
 const figmaRestApi = require("./util/figmaRestApi");
 const Utils = require("./util/utils");
-const outputFolder = "./src/svg/";
+const path = require('path');
+const outputFolder = "./icons/";
 const rateLimit = 20;
-const waitTimeInSeconds = 45;
+const waitTimeInSeconds = 30;
 
 const getProjectNode = async () => {
   return await figmaRestApi.get(
@@ -29,35 +30,34 @@ const svgExporter = async () => {
     ].document.children;
 
     // If ignoring private components
-    let svgs;
-    if(process.env.FILTER_PRIVATE_COMPONENTS === 'false') {
-      svgs = Utils.findAllByValue(children, "COMPONENT")
-    } else {
-      svgs = Utils.filterPrivateComponents(Utils.findAllByValue(children, "COMPONENT"));
+    let svgs = children.filter(c => c.type === 'COMPONENT');
+    if (process.env.FILTER_PRIVATE_COMPONENTS !== 'false') {
+      svgs = Utils.filterPrivateComponents(svgs);
     }
 
     const numOfSvgs = svgs.length;
 
     console.log("Number of SVGs", numOfSvgs);
 
-    Utils.createFolder(outputFolder);
-
     for (i = 0; i < numOfSvgs; i += rateLimit) {
       const requests = svgs.slice(i, i + rateLimit).map(async (svg) => {
         // Get URL of each SVG
-        let svgName = await svg.name;
-
-        if (svgName.includes("/")) {
-          const nameArr = svg.name.split("/").join("-");
-          svgName = nameArr;
+        let svgName = svg.name.replaceAll(' ', '');
+        // keep only one level of folders with the size
+        let svgSubfolders = svgName.split('/');
+        if (svgSubfolders.length >= 2) {
+          svgName = [svgSubfolders[0], svgSubfolders[svgSubfolders.length - 1]].join('/')
         }
+
+        // Create subdirectories for icon (e.g. svg/16px/name.svg)
+        await Utils.createFolder(path.join(outputFolder, path.dirname(svgName)));
 
         const svgURL = await getSVGURL(svg.id);
 
         // Get SVG DOM
         const svgDOM = await axios.get(svgURL.data.images[svg.id]);
         Utils.writeToFile(
-          outputFolder + `${Utils.camelCaseToDash(svgName)}.svg`,
+          path.join(outputFolder, `${Utils.camelCaseToDash(svgName)}.svg`),
           svgDOM.data
         );
       });
