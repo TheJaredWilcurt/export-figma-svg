@@ -29,8 +29,21 @@ const svgExporter = async () => {
       process.env.FIGMA_PROJECT_NODE_ID
     ].document.children;
 
-    // If ignoring private components
+    // Top level svgs
     let svgs = children.filter(c => c.type === 'COMPONENT');
+
+    // Includes 1st level groups (e.g. 24px, 16px)
+    let groups = children.filter(c => c.type === 'GROUP');
+    if (groups.length > 0) {
+      groups.forEach((group) => {
+        const components = group.children.filter(c => c.type === 'COMPONENT');
+        if (components.length > 0) {
+          svgs.push(...components);
+        }
+      });
+    }
+
+    // If ignoring private components
     if (process.env.FILTER_PRIVATE_COMPONENTS !== 'false') {
       svgs = Utils.filterPrivateComponents(svgs);
     }
