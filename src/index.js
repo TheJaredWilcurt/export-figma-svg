@@ -25,23 +25,30 @@ const getSVGURL = async (id) => {
 const svgExporter = async () => {
   try {
     const response = await getProjectNode();
-    const children = await response.data.nodes[
+    const rootFrame = await response.data.nodes[
       process.env.FIGMA_PROJECT_NODE_ID
     ].document.children;
+    
+    // Filter different icon size from single frame
+    const iconSizes = ['24px', '16px']
+    const iconFrame = rootFrame.filter(frame => iconSizes.includes(frame.name))
 
     // Top level svgs
-    let svgs = children.filter(c => c.type === 'COMPONENT');
+    let svgs = [];
 
-    // Includes 1st level groups (e.g. 24px, 16px)
-    let groups = children.filter(c => c.type === 'GROUP');
-    if (groups.length > 0) {
-      groups.forEach((group) => {
-        const components = group.children.filter(c => c.type === 'COMPONENT');
-        if (components.length > 0) {
-          svgs.push(...components);
+    // Map icons from each Row of icon frame
+    iconFrame.map(frame => {
+      // Loop through each row in icon frame
+      // with name starting with "Row" and type as "FRAME"
+      frame.children.map(row => {
+        const name = row.name.toLowerCase()
+
+        if (name.startsWith('row') && row.type === "FRAME") {
+          const list = row.children.filter(icon => icon.type === 'COMPONENT');
+          svgs.push(...list)
         }
-      });
-    }
+      })
+    })
 
     // If ignoring private components
     if (process.env.FILTER_PRIVATE_COMPONENTS !== 'false') {
