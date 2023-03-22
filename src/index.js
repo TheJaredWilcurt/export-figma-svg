@@ -22,6 +22,27 @@ const getSVGURL = async (id) => {
   );
 };
 
+const extractFigmaGroup = (children) => {
+  const svgs = [];
+
+  // SVG in current folder
+  const components = children.filter(c => c.type === 'COMPONENT');
+  if (components.length > 0) {
+    svgs.push(...components);
+  }
+
+  // Sub-groups
+  const groups = children.filter(c => c.type === 'GROUP' || c.type === 'FRAME');
+  groups.forEach(group => {
+    const groupComponents = extractFigmaGroup(group.children);
+    if (groupComponents.length > 0) {
+      svgs.push(...groupComponents);
+    }
+  });
+
+  return svgs;
+};
+
 const svgExporter = async () => {
   try {
     const response = await getProjectNode();
@@ -30,25 +51,11 @@ const svgExporter = async () => {
     ].document.children;
     
     // Filter different icon size from single frame
-    const iconSizes = ['24px', '16px']
-    const iconFrame = rootFrame.filter(frame => iconSizes.includes(frame.name))
+    const iconSizes = ['24px', '16px'];
+    const iconFrame = rootFrame.filter(frame => iconSizes.includes(frame.name));
 
     // Top level svgs
-    let svgs = [];
-
-    // Map icons from each Row of icon frame
-    iconFrame.map(frame => {
-      // Loop through each row in icon frame
-      // with name starting with "Row" and type as "FRAME"
-      frame.children.map(row => {
-        const name = row.name.toLowerCase()
-
-        if (name.startsWith('row') && row.type === "FRAME") {
-          const list = row.children.filter(icon => icon.type === 'COMPONENT');
-          svgs.push(...list)
-        }
-      })
-    })
+    let svgs = extractFigmaGroup(iconFrame);
 
     // If ignoring private components
     if (process.env.FILTER_PRIVATE_COMPONENTS !== 'false') {
