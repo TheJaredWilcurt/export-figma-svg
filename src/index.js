@@ -9,16 +9,13 @@ const waitTimeInSeconds = 30;
 
 const getProjectNode = async () => {
   return await figmaRestApi.get(
-    "files/" +
-      process.env.FIGMA_PROJECT_ID +
-      "/nodes?ids=" +
-      process.env.FIGMA_PROJECT_NODE_ID
+    `files/${process.env.FIGMA_PROJECT_ID}/nodes?ids=${process.env.FIGMA_PROJECT_NODE_ID}`
   );
 };
 
 const getSVGURL = async (id) => {
   return await figmaRestApi.get(
-    "images/" + process.env.FIGMA_PROJECT_ID + "/?ids=" + id + "&format=svg"
+    `images/${process.env.FIGMA_PROJECT_ID}/?ids=${id}&format=svg`
   );
 };
 
@@ -71,9 +68,9 @@ const svgExporter = async () => {
         // Get URL of each SVG
         let svgName = svg.name.replaceAll(' ', '');
         // keep only one level of folders with the size
-        let svgSubfolders = svgName.split('/');
+        const svgSubfolders = svgName.split('/');
         if (svgSubfolders.length >= 2) {
-          svgName = [svgSubfolders[0], svgSubfolders[svgSubfolders.length - 1]].join('/')
+          svgName = [svgSubfolders[0], svgSubfolders.slice(1).join('-')].join('/')
         }
 
         // Create subdirectories for icon (e.g. svg/16px/name.svg)
@@ -92,7 +89,7 @@ const svgExporter = async () => {
       await Promise.all(requests)
         .then(() => {
           console.log(`Wait for ${waitTimeInSeconds} seconds`);
-          return new Promise(function (resolve) {
+          return new Promise((resolve) => {
             setTimeout(() => {
               console.log(`${waitTimeInSeconds} seconds!`);
               resolve();
