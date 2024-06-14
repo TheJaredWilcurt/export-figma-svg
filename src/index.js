@@ -5,7 +5,7 @@ const figmaRestApi = require('./util/figmaRestApi');
 const Utils = require('./util/utils');
 const outputFolder = process.env.FIGMA_ICONS_OUTPUT_FOLDER || './icons/';
 const rateLimit = 20;
-const waitTimeInSeconds = 10;
+const waitTimeInSeconds = 30;
 
 const ICON_SIZES = ['24px', '16px'];
 
