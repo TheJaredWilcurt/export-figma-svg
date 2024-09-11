@@ -1,34 +1,75 @@
-# Export SVGs from Figma via CLI
+# WIP: This project is not done/published yet
+
+
+# Export SVGs from Figma
+
 
 ## Getting Started
 
-Export your SVGs that are in your Figma project easily via CLI.
+1. Run: `npm install --save-dev export-figma-svg` (not published)
+1. Create a node script like this:
 
-![Gif of exporting process](documentation/export-in-action.gif)
+```js
+import fs from 'node:fs';
+import path from 'node:path';
+
+import exportFigmaSvgs from 'export-figma-svgs';
+
+const __dirname = import.meta.dirname;
+
+const getIcons = async function () {
+  // Returns JSON data about each icon as an object with SVG data in the object.
+  const iconsData = await exportFigmaSvgs({
+    // Defaults to 'https://api.figma.com/v1/'
+    baseUrl: 'https://api.figma.com/v1/',
+
+    // Click on the frame containing all your icons, then grab the ID and Node ID from the URL:
+    // https://www.figma.com/design/ABCdEfg0HIJkLmN12OpqrS/Whatever?node-id=123-456&node-type=frame&t=ZyXWvUt98SRqpOnm-0
+    projectId: 'ABCdEfg0HIJkLmN12OpqrS',
+    projectNodeId: '123:456',
+
+    // Defaults to false. Set this to true to skip icons that begin with a period (.) or underscore (_)
+    filterPrivateComponents: false,
+
+    // Where to output your SVG files. If not provided, no SVGs files are created.
+    svgOutput: path.resolve(__dirname, 'icons'),
+
+    // Figma.com > Account > Account Settings > Personal Access Token
+    // You can store it in a `.env` file and use `node --env-file=.env ./scripts/this-file.js` to run it
+    personalAccessToken: process.env.FIGMA_API_KEY
+  });
+
+  // To store the Icons data
+  const iconsDataFile = path.resolve(__dirname, 'icons.json');
+  fs.writeFileSync(iconsDataFile, JSON.stringify(iconsData, null, 2));
+};
+```
+
 
 ## Pre-requisties
 
-- You will need a DEV_TOKEN (See Step 5 of Setup)
-- Your Icons are in a single Frame
-- Each icon is a Figma Component (Select Icon and use the shortcut key ⌥⌘K)
-  ![Screenshot of Icon as a Figma Component](documentation/this-is-a-component.png)
+* You will need a personal access token from Figma.com (API key)
+* Your icons are in a single Frame
+* Each icon is a Figma Component (Select Icon and use `Ctrl+Alt+K` / `Command+Option+K`)
 
-### Output
 
-Your SVGs will be generated in `src/svg` folder
+### Running locally
 
-### Setup
+1. `npm install`
+1. `npm run lint`
 
-1. `yarn install`
-2. Select the frame your icons are in ![Screenshot of a sample Figma project](documentation/export-svg-screenshot.png)
-3. Copy the URL in the browser; it should look similar to `https://www.figma.com/file/abcASewbASmnas/Test?node-id=1%3123`
-4. Run `node src/setupEnv.js` and paste in your URL copied from step 3 when prompted. This will generate a `.env` file
-5. Generate a DEV_TOKEN a.k.a Personal Access Token by going to Help and Account > Account Settings > Personal Access Token
-6. Add your DEV_TOKEN from step 5 into `.env` file
-7. Run `node src/index.js` and your SVGs will be generated into `src/svg` folder
 
-### Filtering Private Components (starting with a . or a _)
-1. If you want to ignore / filter private components that start with a . or _, change the FILTER_PRIVATE_COMPONENTS variable to `true`. Thanks to [lennertVanSever for their contribution to this](https://github.com/jacobtyq/export-figma-svg/pull/27)
 ### Limitations
 
 Figma API has a fixed number of requests (rate limits) you can call per minute. This script will process a 20 requests per 45 seconds to avoid hitting that limit.
+
+
+## This repo started as a fork
+
+@jacobtyq made [export-figma-svg](https://github.com/jacobtyq/export-figma-svg), a CLI tool.
+
+Then @FlatIO [forked it](https://github.com/FlatIO/export-figma-svg)) to make a several improvements.
+
+Then I forked their code and made a bunch of changes so this could be published to npm for script usage, rather than used via CLI.
+
+But not sure if I'll actually publish it yet.

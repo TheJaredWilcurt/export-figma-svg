@@ -1,18 +1,30 @@
 {
-  "name": "export-figma-svg",
-  "version": "0.0.1",
+  "name": "export-figma-svgs",
   "description": "Export SVGs from Figma",
+  "type": "module",
+  "version": "3.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "TZ=Asia/Singapore jest"
+    "lint": "eslint *.js src"
   },
-  "author": "Jacob Tan <jacobtyq@gmail.com>",
-  "license": "MIT",
   "dependencies": {
-    "axios": "^0.21.1",
-    "dotenv": "^10.0.0",
-    "fs": "^0.0.1-security",
-    "jest": "^26.6.3",
-    "pg": "^8.7.1"
+    "axios": "^1.7.7"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin-js": "^2.8.0",
+    "eslint": "^9.10.0",
+    "eslint-config-tjw-base": "^3.0.1"
+  },
+  "author": "The Jared Wilcurt",
+  "homepage": "https://github.com/TheJaredWilcurt/export-figma-svgs",
+  "license": "MIT",
+  "keywords": [
+    "Figma",
+    "SVGs",
+    "icons",
+    "export"
+  ],
+  "volta": {
+    "node": "22.8.0"
   }
 }
